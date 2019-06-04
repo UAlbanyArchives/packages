@@ -47,6 +47,7 @@ class SubmissionInformationPackage:
     def package(self, dir):
         self.setupProcecssing()
         
+        excludeList = ["thumbs.db", "desktop.ini", ".ds_store"]
         if not os.path.isdir(dir):
             raise Exception("ERROR: " + str(dir) + " is not a valid path.")
         else:
@@ -54,8 +55,9 @@ class SubmissionInformationPackage:
             for thing in os.listdir(dir):
                 thingPath = os.path.join(dir, thing)
                 if os.path.isfile(thingPath):
-                    shutil.copy2(thingPath, self.data)
-                    shutil.copy2(thingPath, self.procMasters)
+                    if not thing.lower() in excludeList:
+                        shutil.copy2(thingPath, self.data)
+                        shutil.copy2(thingPath, self.procMasters)
                 else:
                     shutil.copytree(thingPath, os.path.join(self.data, thing))
                     shutil.copytree(thingPath, os.path.join(self.procMasters, thing))
