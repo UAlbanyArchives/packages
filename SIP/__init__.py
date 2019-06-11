@@ -138,11 +138,11 @@ class SubmissionInformationPackage:
         import openpyxl
         if os.path.isfile(logFile):
             wb = openpyxl.load_workbook(filename=logFile, read_only=False)
-            sheet = logBook.active
+            sheet = wb.active
             startRow = int(sheet.max_row) + 1
         else:
             wb = openpyxl.Workbook()
-            sheet = logBook.active
+            sheet = wb.active
             sheet["A1"] = "Date"
             sheet["B1"] = "Collection ID"
             sheet["C1"] = "Type"
@@ -161,4 +161,4 @@ class SubmissionInformationPackage:
         sheet["F" + str(startRow)] = str(packageSize[0]) + " " + str(packageSize[1])
         sheet["G" + str(startRow)] = self.bag.info["Payload-Oxum"]
             
-        logBook.save(filename=logFile)
+        wb.save(filename=logFile)
