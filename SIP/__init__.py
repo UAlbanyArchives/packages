@@ -133,3 +133,32 @@ class SubmissionInformationPackage:
             procMetadata = os.path.join(procPath, "metadata")
             if not os.path.isdir(procMetadata):
                 os.mkdir(procMetadata)
+                
+    def extentLog(self, logFile):
+        import openpyxl
+        if os.path.isfile(logFile):
+            wb = openpyxl.load_workbook(filename=logFile, read_only=False)
+            sheet = logBook.active
+            startRow = int(sheet.max_row) + 1
+        else:
+            wb = openpyxl.Workbook()
+            sheet = logBook.active
+            sheet["A1"] = "Date"
+            sheet["B1"] = "Collection ID"
+            sheet["C1"] = "Type"
+            sheet["D1"] = "Package"
+            sheet["E1"] = "Files"
+            sheet["F1"] = "Extent"
+            sheet["G1"] = "Extent Bytes"
+            startRow = 2
+            
+        packageSize = self.size()
+        sheet["A" + str(startRow)] = self.bag.info["Bagging-Date"]
+        sheet["B" + str(startRow)] = self.bag.info["Collection-Identifier"]
+        sheet["C" + str(startRow)] = self.bag.info["Bag-Type"]
+        sheet["D" + str(startRow)] = self.bag.info["Bag-Identifier"]
+        sheet["E" + str(startRow)] = packageSize[2]
+        sheet["F" + str(startRow)] = str(packageSize[0]) + " " + str(packageSize[1])
+        sheet["G" + str(startRow)] = self.bag.info["Payload-Oxum"]
+            
+        logBook.save(filename=logFile)
