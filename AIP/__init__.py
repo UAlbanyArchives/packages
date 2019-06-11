@@ -99,8 +99,8 @@ class ArchivalInformationPackage:
         sheet["B" + str(startRow)] = self.bag.info["Collection-Identifier"]
         sheet["C" + str(startRow)] = self.bag.info["Bag-Type"]
         sheet["D" + str(startRow)] = self.bag.info["Bag-Identifier"]
-        sheet["E" + str(startRow)] = packageSize[2]
+        sheet["E" + str(startRow)] = int(packageSize[2])
         sheet["F" + str(startRow)] = str(packageSize[0]) + " " + str(packageSize[1])
-        sheet["G" + str(startRow)] = self.bag.info["Payload-Oxum"].split(".")[0]
+        sheet["G" + str(startRow)] = int(int(self.bag.info["Payload-Oxum"].split(".")[0]) / 1048576)
             
         wb.save(filename=logFile)
