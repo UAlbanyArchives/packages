@@ -65,6 +65,17 @@ class ArchivalInformationPackage:
             os.mkdir(dataPath)
         shutil.copy2(file, dataPath)
         
+    def size(self):
+        suffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+        bytes, fileCount = self.bag.info["Payload-Oxum"].split(".")
+        dirSize = int(bytes)
+        i = 0
+        while dirSize >= 1024 and i < len(suffixes)-1:
+            dirSize /= 1024.
+            i += 1
+        f = ('%.2f' % dirSize).rstrip('0').rstrip('.')
+        return [f, suffixes[i], fileCount]
+        
     def extentLog(self, logFile):
         import openpyxl
         if os.path.isfile(logFile):
@@ -90,6 +101,6 @@ class ArchivalInformationPackage:
         sheet["D" + str(startRow)] = self.bag.info["Bag-Identifier"]
         sheet["E" + str(startRow)] = packageSize[2]
         sheet["F" + str(startRow)] = str(packageSize[0]) + " " + str(packageSize[1])
-        sheet["G" + str(startRow)] = self.bag.info["Payload-Oxum"]
+        sheet["G" + str(startRow)] = self.bag.info["Payload-Oxum"].split(".")[0]
             
         wb.save(filename=logFile)

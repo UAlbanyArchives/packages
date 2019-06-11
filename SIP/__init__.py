@@ -98,16 +98,8 @@ class SubmissionInformationPackage:
         
     def size(self):
         suffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
-        dirSize = 0
-        fileCount = 0
-        for root, dirs, files in os.walk(self.data):
-            for file in files:
-                fileCount += 1
-                try:
-                    dirSize += os.path.getsize(os.path.join(root, file))
-                except:
-                    #this is bad, but its so it doesn't break with Windows Path limits
-                    pass
+        bytes, fileCount = self.bag.info["Payload-Oxum"].split(".")
+        dirSize = int(bytes)
         i = 0
         while dirSize >= 1024 and i < len(suffixes)-1:
             dirSize /= 1024.
@@ -163,6 +155,6 @@ class SubmissionInformationPackage:
         sheet["D" + str(startRow)] = self.bag.info["Bag-Identifier"]
         sheet["E" + str(startRow)] = packageSize[2]
         sheet["F" + str(startRow)] = str(packageSize[0]) + " " + str(packageSize[1])
-        sheet["G" + str(startRow)] = self.bag.info["Payload-Oxum"]
+        sheet["G" + str(startRow)] = self.bag.info["Payload-Oxum"].split(".")[0]
             
         wb.save(filename=logFile)
