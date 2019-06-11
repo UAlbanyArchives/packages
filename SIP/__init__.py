@@ -103,7 +103,11 @@ class SubmissionInformationPackage:
         for root, dirs, files in os.walk(self.data):
             for file in files:
                 fileCount += 1
-                dirSize += os.path.getsize(os.path.join(root, file))
+                try:
+                    dirSize += os.path.getsize(os.path.join(root, file))
+                except:
+                    #this is bad, but its so it doesn't break with Windows Path limits
+                    pass
         i = 0
         while dirSize >= 1024 and i < len(suffixes)-1:
             dirSize /= 1024.
