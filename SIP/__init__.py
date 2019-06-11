@@ -145,7 +145,7 @@ class SubmissionInformationPackage:
             sheet["D1"] = "Package"
             sheet["E1"] = "Files"
             sheet["F1"] = "Extent"
-            sheet["G1"] = "Extent Bytes"
+            sheet["G1"] = "Extent (MB)"
             startRow = 2
             
         packageSize = self.size()
