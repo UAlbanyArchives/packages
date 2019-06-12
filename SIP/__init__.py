@@ -106,6 +106,20 @@ class SubmissionInformationPackage:
             i += 1
         f = ('%.2f' % dirSize).rstrip('0').rstrip('.')
         return [f, suffixes[i], fileCount]
+        
+    def dates(self):
+        begin = "9999-12-31"
+        end = "0001-01-01"
+        for root, dirs, files in os.walk(self.data):
+            for file in files:
+                filePath = os.path.join(root, file)
+                mtime = os.path.getmtime(filePath)
+                date = str(datetime.fromtimestamp(mtime)).split(" ")[0]
+                if date < begin and date > "1990-01-01":
+                    begin = date
+                if date > end and date < str(datetime.now().isoformat()).split("T")[0]:
+                    end = date
+        return [begin, end]
                     
     def setupProcecssing(self):
         
