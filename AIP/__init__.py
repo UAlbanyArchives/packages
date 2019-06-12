@@ -16,7 +16,10 @@ class ArchivalInformationPackage:
 
         self.bag = bagit.Bag(path)
         self.accession = os.path.basename(path)
-        self.colID = self.accession.split("_")[0]
+        if "_" in self.accession:
+            self.colID = self.accession.split("_")[0]
+        else:
+            self.colID = self.accession.split("-")[0]
         self.data = os.path.join(path, "data")        
     
     def create(self, colID, accession):
