@@ -117,7 +117,7 @@ class SubmissionInformationPackage:
                 date = str(datetime.fromtimestamp(mtime)).split(" ")[0]
                 if date < begin and date > "1990-01-01":
                     begin = date
-                if date > end and date < str(datetime.now().isoformat()).split("T")[0]:
+                if date > end and date <= str(datetime.now().isoformat()).split("T")[0]:
                     end = date
         return [begin, end]
                     
