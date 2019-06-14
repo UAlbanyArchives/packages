@@ -8,7 +8,7 @@ from datetime import datetime
 class SubmissionInformationPackage:
 
     def __init__(self):
-        pass
+        self.excludeList = ["thumbs.db", "desktop.ini", ".ds_store"]
         
     def load(self, path):
         if not os.path.isdir(path):
@@ -43,11 +43,17 @@ class SubmissionInformationPackage:
         self.bag = bagit.make_bag(self.bagDir, metadata)
         self.data = os.path.join(self.bagDir, "data")
         
-        
+    def clean(self):
+        for root, dirs, files in os.walk(self.data):
+            for file in files:
+                if file.lower() in self.excludeList:
+                    filePath = os.path.join(root, file)
+                    print ("removing " + filePath)
+                    os.remove(filePath)     
+    
     def package(self, dir):
         self.setupProcecssing()
         
-        excludeList = ["thumbs.db", "desktop.ini", ".ds_store"]
         if not os.path.isdir(dir):
             raise Exception("ERROR: " + str(dir) + " is not a valid path.")
         else:
@@ -55,7 +61,7 @@ class SubmissionInformationPackage:
             for thing in os.listdir(dir):
                 thingPath = os.path.join(dir, thing)
                 if os.path.isfile(thingPath):
-                    if not thing.lower() in excludeList:
+                    if not thing.lower() in self.excludeList:
                         shutil.copy2(thingPath, self.data)
                         shutil.copy2(thingPath, self.procMasters)
                 else:
