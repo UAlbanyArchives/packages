@@ -59,7 +59,7 @@ class ArchivalInformationPackage:
         metadataPath = os.path.join(self.bagDir, "metadata")
         if not os.path.isdir(metadataPath):
             os.mkdir(metadataPath)
-        metadataFile = os.path.join(metadataPath, accession + ".tsv")
+        metadataFile = os.path.join(metadataPath, self.accession + ".tsv")
         addHeaders = False
         if not os.path.isfile(metadataFile):
             addHeaders = True
