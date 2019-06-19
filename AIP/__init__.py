@@ -76,7 +76,10 @@ class ArchivalInformationPackage:
             os.mkdir(dataPath)
         shutil.copy2(file, dataPath)
         
-    def packageFiles(self, type, dir): 
+    def packageFiles(self, type, dir):
+        allowed = ["derivatives", "masters"]
+        if not type in allowed:
+            raise Exception("ERROR: " + str(type) + " is not a valid subfolder in the AIP /data directory.")
         if not os.path.isdir(dir):
             raise Exception("ERROR: " + str(dir) + " is not a valid path.")
         else:
@@ -92,7 +95,49 @@ class ArchivalInformationPackage:
                         shutil.copy2(thingPath, dest)
                 else:
                     shutil.copytree(thingPath, os.path.join(dest, thing))
+                    
+    def packageMetadata(self, dir, subfolder=None):
+        if isinstance(dir, (list,)):
+            pathList = dir 
+        elif not os.path.isdir(dir):
+            raise Exception("ERROR: " + str(dir) + " is not a valid path.")
+        else:
+            pathList = []
+            for item in os.listdir(dir):
+                pathList.append(os.path.join(dir, item))
         
+        metadataDir = os.path.join(self.bag.path, "metadata")
+        if not os.path.isdir(metadataDir):
+            os.mkdir(metadataDir)
+        if subfolder is None:
+            dest = metadataDir
+        else:
+            dest = os.path.join(metadataDir, subfolder)
+            if not os.path.isdir(dest):
+                os.mkdir(dest)
+            
+        # Move files and folders to metadataDir
+        for thing in pathList:
+            if os.path.isfile(thing):
+                if not thing.lower() in self.excludeList:
+                    shutil.copy2(thing, dest)
+            elif os.path.isdir(thing):
+                shutil.copytree(thing, os.path.join(dest, thing))
+            else:
+                raise Exception("ERROR: " + str(thing) + " is not a valid path.")
+        
+    def addSIPData(self, sipDir):
+        if not os.path.isdir(sipDir):
+            raise Exception("ERROR: SIP " + str(sipDir) + " is not a valid path.")
+        dest = os.path.join(self.bag.path, "SIP")
+        if not os.path.isdir(dest):
+            os.mkdir(dest)
+        for file in os.listdir(sipDir):
+            filePath = os.path.join(sipDir, file)
+            if os.path.isfile(filePath):
+                shutil.copy2(filePath, dest)
+    
+    
     def size(self):
         suffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
         bytes, fileCount = self.bag.info["Payload-Oxum"].split(".")

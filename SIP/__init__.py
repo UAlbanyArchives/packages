@@ -49,7 +49,7 @@ class SubmissionInformationPackage:
                 if file.lower() in self.excludeList:
                     filePath = os.path.join(root, file)
                     print ("removing " + filePath)
-                    os.remove(filePath)     
+                    os.remove(filePath)
     
     def package(self, dir):
         self.setupProcecssing()
@@ -178,3 +178,17 @@ class SubmissionInformationPackage:
         sheet["G" + str(startRow)] = int(int(self.bag.info["Payload-Oxum"].split(".")[0]) / 1048576)
             
         wb.save(filename=logFile)
+        
+    def safeRemove(self):
+        aipDir = "/media/Masters/Archives/AIP"
+        aipPath = os.path.join(aipDir, self.colID, self.bagID)
+        if not os.path.isdir(aipPath):
+            raise Exception("ERROR: " + str(aipPath) + " does not exist. A valid AIP must be present to use SIP.safeRemove().")
+        from .. import AIP
+        this = AIP.ArchivalInformationPackage()
+        this.load(aipPath)
+        if this.bag.is_valid():
+            shutil.rmtree(self.bag.path) 
+        else:
+            raise Exception("ERROR: " + str(aipPath) + " is not valid! A valid AIP must be present to use SIP.safeRemove().")
+        
