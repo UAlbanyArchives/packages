@@ -4,6 +4,7 @@ import time
 import bagit
 import shutil
 from datetime import datetime
+from subprocess import Popen, PIPE
 
 class ArchivalInformationPackage:
 
@@ -88,13 +89,13 @@ class ArchivalInformationPackage:
                 os.mkdir(dest)
                 
             # Move files and folders to AIP
-            for thing in os.listdir(dir):
-                thingPath = os.path.join(dir, thing)
-                if os.path.isfile(thingPath):
-                    if not thing.lower() in self.excludeList:
-                        shutil.copy2(thingPath, dest)
-                else:
-                    shutil.copytree(thingPath, os.path.join(dest, thing))
+            cmd = ["rsync", "-arv", os.path.join(dir, os.path.sep), os.path.join(dest, os.path.sep)]
+            p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+            stdout, stderr = p.communicate()
+            if len(stdout) > 0:
+                print (stdout)
+            if len(stderr) > 0:
+                print (stderr)
                     
     def packageMetadata(self, dir, subfolder=None):
         if isinstance(dir, (list,)):
