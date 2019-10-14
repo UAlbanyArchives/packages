@@ -89,13 +89,17 @@ class ArchivalInformationPackage:
                 os.mkdir(dest)
                 
             # Move files and folders to AIP
-            cmd = ["rsync", "-arv", os.path.join(dir, os.path.sep), os.path.join(dest, os.path.sep)]
+            cmd = ["rsync", "-arv", os.path.join(dir, ""), os.path.join(dest, "")]
+            print ("Running " + " ".join(cmd))
             p = Popen(cmd, stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate()
-            if len(stdout) > 0:
-                print (stdout)
-            if len(stderr) > 0:
-                print (stderr)
+            if p.returncode != 0:
+                raise ("\n".join([stderr, stdout]))
+            else:
+                if len(stdout) > 0:
+                    print (stdout)
+                if len(stderr) > 0:
+                    print (stderr)
                     
     def packageMetadata(self, dir, subfolder=None):
         if isinstance(dir, (list,)):
