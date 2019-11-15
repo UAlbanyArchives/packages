@@ -87,17 +87,21 @@ class ArchivalInformationPackage:
             dest = os.path.join(self.data, type)
             if not os.path.isdir(dest):
                 os.mkdir(dest)
-                
+            print(datetime.now())
             # Move files and folders to AIP
             cmd = ["rsync", "-arv", os.path.join(dir, ""), os.path.join(dest, "")]
             print ("Running " + " ".join(cmd))
             p = Popen(cmd, stdout=PIPE, stderr=PIPE)
             stdout, stderr = p.communicate()
             if p.returncode != 0:
-                raise ("\n".join([stderr, stdout]))
+                print (stdout)
+                print (stderr)
+                print("Copy failed at " + str(datetime.now()))
+                raise ValueError(stderr)
             else:
-                if len(stdout) > 0:
-                    print (stdout)
+                print ("Success!")
+                print("Copy completed at " + str(datetime.now()))
+                print (stdout)
                 if len(stderr) > 0:
                     print (stderr)
                     
