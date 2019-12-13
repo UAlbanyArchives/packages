@@ -78,7 +78,7 @@ class ArchivalInformationPackage:
             os.mkdir(dataPath)
         shutil.copy2(file, dataPath)
         
-    def copyRsync(source, destination, retry=0):
+    def copyRsync(self, source, destination, retry=0):
         retry += 1
         if retry < 6:
             cmd = ["rsync", "-arv", "--partial", source, destination]
@@ -91,7 +91,7 @@ class ArchivalInformationPackage:
                 print (stderr)
                 print ("Copy failed at " + str(datetime.now()))
                 print ("Retrying...")
-                copyRsync(source, destination, retry)
+                self.copyRsync(source, destination, retry)
             else:
                 print ("Success!")
                 print("Copy completed at " + str(datetime.now()))
@@ -114,7 +114,7 @@ class ArchivalInformationPackage:
                 os.mkdir(dest)
             print(datetime.now())
             # Move files and folders to AIP
-            copyRsync(os.path.join(dir, ""), os.path.join(dest, ""))
+            self.copyRsync(os.path.join(dir, ""), os.path.join(dest, ""))
                     
     def packageMetadata(self, dir, subfolder=None):
         if isinstance(dir, (list,)):
