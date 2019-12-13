@@ -21,7 +21,8 @@ class ArchivalInformationPackage:
             self.colID = self.accession.split("_")[0]
         else:
             self.colID = self.accession.split("-")[0]
-        self.data = os.path.join(path, "data")        
+        self.bagDir = (path)
+        self.data = os.path.join(self.bagDir, "data")        
     
     def create(self, colID, accession):
         aipPath= "/media/Masters/Archives/AIP"
@@ -51,7 +52,7 @@ class ArchivalInformationPackage:
                 if file.lower() in self.excludeList:
                     filePath = os.path.join(root, file)
                     print ("removing " + filePath)
-                    os.remove(filePath) 
+                    os.remove(filePath)
     
     def addMetadata(self, hyraxData):
         headers = ["Type", "URIs", "File Paths", "Accession", "Collecting Area", "Collection Number", "Collection", \
@@ -77,6 +78,30 @@ class ArchivalInformationPackage:
             os.mkdir(dataPath)
         shutil.copy2(file, dataPath)
         
+    def copyRsync(source, destination, retry=0):
+        retry += 1
+        if retry < 6:
+            cmd = ["rsync", "-arv", "--partial", source, destination]
+            print ("Copy attempt " + str(retry) + " at " + str(datetime.now()))
+            print ("Running " + " ".join(cmd))
+            p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+            stdout, stderr = p.communicate()
+            if p.returncode != 0:
+                print (stdout)
+                print (stderr)
+                print ("Copy failed at " + str(datetime.now()))
+                print ("Retrying...")
+                copyRsync(source, destination, retry)
+            else:
+                print ("Success!")
+                print("Copy completed at " + str(datetime.now()))
+                print (stdout)
+                if len(stderr) > 0:
+                    print (stderr)
+        else:
+            print ("Failed to copy in 5 attempts")
+            raise ValueError("Failed to copy in 5 attempts")
+    
     def packageFiles(self, type, dir):
         allowed = ["derivatives", "masters"]
         if not type in allowed:
@@ -89,21 +114,7 @@ class ArchivalInformationPackage:
                 os.mkdir(dest)
             print(datetime.now())
             # Move files and folders to AIP
-            cmd = ["rsync", "-arv", os.path.join(dir, ""), os.path.join(dest, "")]
-            print ("Running " + " ".join(cmd))
-            p = Popen(cmd, stdout=PIPE, stderr=PIPE)
-            stdout, stderr = p.communicate()
-            if p.returncode != 0:
-                print (stdout)
-                print (stderr)
-                print("Copy failed at " + str(datetime.now()))
-                raise ValueError(stderr)
-            else:
-                print ("Success!")
-                print("Copy completed at " + str(datetime.now()))
-                print (stdout)
-                if len(stderr) > 0:
-                    print (stderr)
+            copyRsync(os.path.join(dir, ""), os.path.join(dest, ""))
                     
     def packageMetadata(self, dir, subfolder=None):
         if isinstance(dir, (list,)):
@@ -146,6 +157,68 @@ class ArchivalInformationPackage:
             if os.path.isfile(filePath):
                 shutil.copy2(filePath, dest)
     
+    def checkSIPManifest(self, algorithm="sha256"):
+        import hashlib
+        BUF_SIZE = 512 * 1024
+        
+        sipManifestPath = os.path.join(self.bagDir, "SIP", "manifest-" + algorithm.lower().strip() + ".txt")
+        if not os.path.isfile(sipManifestPath):
+            print ("Cannot validate against SIP manifest file, no sha256 SIP manifest file is present")
+            return False
+        else:
+            actualFiles = []
+            mastersDir = os.path.join(self.data, "masters")
+            for root, dirs, files in os.walk(mastersDir):
+                for file in files:
+                
+                    relPath = "data" + os.path.join(root, file).split("data")[1]
+                    #print (relPath)
+                    actualFiles.append(relPath)
+            success = True
+            noFileErrors = []
+            badFileErrors = []
+            sipManifestFile = open(sipManifestPath, "r")
+            for line in sipManifestFile.read().splitlines():
+                hash, oldFilePath = line.split("  ")
+                filePath = os.path.join("data", "masters", oldFilePath.split("data/")[1])
+                if not os.path.isfile(os.path.join(self.bagDir, filePath)):
+                    noFileErrors.append(filePath)
+                else:
+                    actualFiles.remove(filePath)
+                    if algorithm.lower() == "md5":
+                        fileHash = hashlib.md5()
+                    elif algorithm.lower() == "sha256":
+                        fileHash = hashlib.sha256()
+                    elif algorithm.lower() == "sha512":
+                        fileHash = hashlib.sha512()
+                    else:
+                        raise ValueError("Error: Hash algorithm " + algorithm + " not supported.")
+                    with open(os.path.join(self.bagDir, filePath), 'rb') as f:
+                        while True:
+                            data = f.read(BUF_SIZE)
+                            if not data:
+                                break
+                            fileHash.update(data)
+                    if not str(fileHash.hexdigest()) == hash:
+                        badFileErrors.append(filePath)
+                    
+            if len(noFileErrors) > 0:
+                success = False
+                print ("Missing files defined in SIP manifest:")
+                print ("\t" + "\n\t".join(noFileErrors))
+            if len(badFileErrors) > 0:
+                success = False
+                print ("Files defined in SIP manifest have changed:")
+                print ("\t" + "\n\t".join(badFileErrors))
+            if len(actualFiles) > 0:
+                success = False
+                print ("Additional files not in SIP manifest:")
+                print ("\t" + "\n\t".join(actualFiles))
+            sipManifestFile.close()
+            
+            return success
+                
+        
     
     def size(self):
         suffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
