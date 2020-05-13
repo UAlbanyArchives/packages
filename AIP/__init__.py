@@ -138,11 +138,14 @@ class ArchivalInformationPackage:
             
         # Move files and folders to metadataDir
         for thing in pathList:
+            print ("Moving " + thing)
             if os.path.isfile(thing):
                 if not thing.lower() in self.excludeList:
                     shutil.copy2(thing, dest)
             elif os.path.isdir(thing):
-                shutil.copytree(thing, os.path.join(dest, thing))
+                newDir = os.path.join(dest, os.path.basename(thing))
+                shutil.copytree(thing, newDir)
+                #pass
             else:
                 raise Exception("ERROR: " + str(thing) + " is not a valid path.")
         
