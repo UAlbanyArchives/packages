@@ -129,7 +129,7 @@ class SubmissionInformationPackage:
                     
     def setupProcecssing(self):
         
-        processingRoot = "/media/SPE/processing"
+        processingRoot = "/media/Library/SPE_Processing/backlog"
         if not os.path.isdir(processingRoot):
             raise Exception("ERROR: Processing Path " + str(processingRoot) + " is not a valid path.")
         else:
